@@ -1,0 +1,284 @@
+[Unit]
+Description=Prometheus
+Documentation=https://prometheus.io/docs/introduction/overview/
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+Type=simple
+User=prometheus
+Group=prometheus
+ExecReload=/bin/kill -HUP \$MAINPID
+ExecStart=/usr/local/bin/prometheus \
+  --config.file=/etc/prometheus/prometheus.yml \
+  --storage.tsdb.path=/var/lib/prometheus \
+  --web.console.templates=/etc/prometheus/consoles \
+  --web.console.libraries=/etc/prometheus/console_libraries \
+  --web.listen-address=0.0.0.0:9090 \
+  --web.external-url=
+
+SyslogIdentifier=prometheus
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
+====================================================================================
+[Unit]
+Description=Node Exporter
+After=network.target
+
+[Service]
+User=nodeusr
+Group=nodeusr
+Type=simple
+ExecStart=/usr/local/bin/node_exporter --web.config=/etc/node_exporter/config.yml
+
+[Install]
+WantedBy=multi-user.target
+
+====================================================================================
+htpasswd -nBC 10 "" | tr -d ':\n'; echo
+apt install apache2-utils -y
+$2y$10$3yvNNeQKn2fDR0ls.WYO5e1W3a01Ksp9TgEKtW/Nt7w2q98odKEXa
+
+$2y$10$J6t/CX.xeLwNhWVSW8NqqeIBC3.YJJkSIAgqlY/zRhim5hdPYdt7u
+
+====================================================================================
+root@node01 ~ ➜  cat /etc/node_exporter/config.yml 
+basic_auth_users:
+  prometheus: $2y$10$3yvNNeQKn2fDR0ls.WYO5e1W3a01Ksp9TgEKtW/Nt7w2q98odKEXa
+====================================================================================
+
+# my global config
+global:
+  scrape_interval: 15s # Set the scrape interval to every 15 seconds. Default is every 1 minute.
+  evaluation_interval: 15s # Evaluate rules every 15 seconds. The default is every 1 minute.
+  # scrape_timeout is set to the global default (10s).
+
+# Alertmanager configuration
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets:
+          # - alertmanager:9093
+
+# Load rules once and periodically evaluate them according to the global 'evaluation_interval'.
+rule_files:
+  # - "first_rules.yml"
+  # - "second_rules.yml"
+
+# A scrape configuration containing exactly one endpoint to scrape:
+# Here it's Prometheus itself.
+scrape_configs:
+  # The job name is added as a label `job=<job_name>` to any timeseries scraped from this config.
+  - job_name: "prometheus"
+
+    # metrics_path defaults to '/metrics'
+    # scheme defaults to 'http'.
+
+    static_configs:
+      - targets: ["localhost:9090"]
+
+  - job_name: "nodes"
+    static_configs:
+      - targets: ["node01:9100", "node02:9100"]
+    basic_auth:
+      username: prometheus
+      password: secret-password
+====================================================================================
+
+openssl req -new -newkey rsa:2048 -days 365 -nodes -x509 -keyout node_exporter.key -out node_exporter.crt -subj "/C=US/ST=California/L=Oakland/O=MyOrg/CN=localhost" -addext "subjectAltName = DNS:localhost"
+basic_auth_users:
+  prometheus: $2y$10$3yvNNeQKn2fDR0ls.WYO5e1W3a01Ksp9TgEKtW/Nt7w2q98odKEXa
+
+tls_server_config:
+  cert_file: node_exporter.crt
+  key_file: node_exporter.key
+  
+  ====================================================================================
+
+
+# my global config
+global:
+  scrape_interval: 15s # Set the scrape interval to every 15 seconds. Default is every 1 minute.
+  evaluation_interval: 15s # Evaluate rules every 15 seconds. The default is every 1 minute.
+  # scrape_timeout is set to the global default (10s).
+
+# Alertmanager configuration
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets:
+          # - alertmanager:9093
+
+# Load rules once and periodically evaluate them according to the global 'evaluation_interval'.
+rule_files:
+  # - "first_rules.yml"
+  # - "second_rules.yml"
+
+# A scrape configuration containing exactly one endpoint to scrape:
+# Here it's Prometheus itself.
+scrape_configs:
+  # The job name is added as a label `job=<job_name>` to any timeseries scraped from this config.
+  - job_name: "prometheus"
+
+    # metrics_path defaults to '/metrics'
+    # scheme defaults to 'http'.
+
+    static_configs:
+      - targets: ["localhost:9090"]
+
+  - job_name: "nodes"
+    static_configs:
+      - targets: ["node01:9100", "node02:9100"]
+    basic_auth:
+      username: prometheus
+      password: secret-password
+    scheme: https
+    tls_config:
+      ca_file: /etc/prometheus/node_exporter.crt
+      insecure_skip_verify: true
+~                                      
+====================================================================================================================
+
+Create/edit /etc/docker/daemon.json file:
+
+vi /etc/docker/daemon.json
+
+Add below given lines in it:
+
+{
+  "metrics-addr" : "127.0.0.1:9323",
+  "experimental" : true
+}
+
+Restart docker service:
+
+systemctl restart docker
+
+Verify if docker is exporting the metrics now:
+
+curl localhost:9323/metrics
+
+
+
+#{
+#  "exec-opts": [
+#    "native.cgroupdriver=cgroupfs"
+#  ],
+#  "bip":"172.12.0.1/24",
+#  "registry-mirrors": [
+#    "http://docker-registry-mirror.kodekloud.com"
+#  ]
+#}
+~                            
+
+{
+  "metrics-addr" : "127.0.0.1:9323",
+  "experimental" : true
+}                                                                                                        
+~    
+====================================================================================================================    
+Create a new job in Prometheus called docker and add the Docker host (i.e. localhost) as a target. Make sure to restart the Prometheus service after making the required changes.
+====================================================================================================================
+
+
+# my global config
+global:
+  scrape_interval: 15s # Set the scrape interval to every 15 seconds. Default is every 1 minute.
+  evaluation_interval: 15s # Evaluate rules every 15 seconds. The default is every 1 minute.
+  # scrape_timeout is set to the global default (10s).
+
+# Alertmanager configuration
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets:
+          # - alertmanager:9093
+
+# Load rules once and periodically evaluate them according to the global 'evaluation_interval'.
+rule_files:
+  # - "first_rules.yml"
+  # - "second_rules.yml"
+
+# A scrape configuration containing exactly one endpoint to scrape:
+# Here it's Prometheus itself.
+scrape_configs:
+  # The job name is added as a label `job=<job_name>` to any timeseries scraped from this config.
+  - job_name: "prometheus"
+
+    # metrics_path defaults to '/metrics'
+    # scheme defaults to 'http'.
+
+    static_configs:
+      - targets: ["localhost:9090"]
+
+  - job_name: "nodes"
+    static_configs:
+      - targets: ["node01:9100", "node02:9100"]
+  - job_name: "docker"
+    static_configs:
+      - targets: ["localhost:9323"]
+	  
+	  
+	  ==============================================================================================
+DockerCompose	  Cadvisor
+	  
+version: '3.4'
+services:
+  cadvisor:
+    image: gcr.io/cadvisor/cadvisor
+    container_name: cadvisor
+    privileged: true
+    devices:
+      - "/dev/kmsg:/dev/kmsg"
+    volumes:
+      - /:/rootfs:ro
+      - /var/run:/var/run:ro
+      - /sys:/sys:ro
+      - /var/lib/docker/:/var/lib/docker:ro
+      - /dev/disk/:/dev/disk:ro
+    ports:
+      - 8070:8080
+~                
+
+Edit /etc/prometheus/prometheus.yml file:
+
+vi /etc/prometheus/prometheus.yml
+
+Add below given lines under scrape_configs:
+
+  - job_name: "cadvisor"
+    static_configs:
+      - targets: ["localhost:8070"]
+
+Restart prometheus service:
+
+systemctl restart prometheus
+
+
+# A scrape configuration containing exactly one endpoint to scrape:
+# Here it's Prometheus itself.
+scrape_configs:
+  # The job name is added as a label `job=<job_name>` to any timeseries scraped from this config.
+  - job_name: "prometheus"
+
+    # metrics_path defaults to '/metrics'
+    # scheme defaults to 'http'.
+
+    static_configs:
+      - targets: ["localhost:9090"]
+
+  - job_name: "nodes"
+    static_configs:
+      - targets: ["node01:9100", "node02:9100"]
+  - job_name: "docker"
+    static_configs:
+      - targets: ["localhost:9323"]
+  - job_name: "cadvisor"
+    static_configs:
+      - targets: ["localhost:8070"]
+	  ==============================================================================================
+
+
+container_cpu_system_seconds_total{job="cadvisor", name="opt-redis3-1"}
