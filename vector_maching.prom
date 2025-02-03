@@ -1,0 +1,52 @@
+operators between 2 instant vectors
+
+node_filesystem_avail_bytes{instance="node1",job="node",mountpoint="/home"}
+node_filesystem_size_bytes{instance="node1",job="node",mountpoint="/home"}
+
+
+node_filesystem_avail_bytes / node_filesystem_size_bytes * 100
+node_filesystem_size_bytes
+
+http_errors
+http_errors{method="get",code="500"}
+http_errors{method="get",code="404"}
+http_errors{method="put",code="501"}
+http_errors{method="post",code="500"}
+http_errors{method="post",code="404"}
+
+http_errors{method="get",code="500"}
+http_errors{code="500"} / http_requests #(wont work)
+
+http_requests{method="get"}
+http_requests{method="del"}
+http_requests{method="post"}
+
+
+# to make it work we need to use ignore labels. Ignore to Ignore and on to to specify exact list of labels to match on
+
+http_errors{code="500"} / ignoring(code) http_requests
+
+# On keywork
+
+http_errors
+http_errors{method="get",code="500"}
+http_errors{method="get",code="404"}
+http_errors{method="put",code="501"}
+http_errors{method="post",code="500"}
+http_errors{method="post",code="404"}
+
+http_requests{method="get"}
+http_requests{method="del"}
+http_requests{method="post"}
+
+http_errors{code="500"} / on(method) http_requests
+
+VECTOR1                         VECTOR2
+{cpu=0,mode=idle}             {cpu=1,mode=steal}
+{cpu=1,mode=iowait}     +     {cpu=2,mode=user}
+{cpu=2,mode=user}             {cpu=0,mode=idle}
+
+
+Many to one
+
+

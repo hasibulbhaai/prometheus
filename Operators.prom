@@ -1,0 +1,43 @@
+node_memory_Active_bytes
+node_memory_Active_bytes{instance="node01", job="node"}
+node_memory_Active_bytes / 1024
+
+
+#Comparison Operator
+node_network_flags{device="enp0s3",instance="node1",job="node"}
+node_network_flags{device="enp0s3",instance="node2",job="node"}
+node_network_flags{device="lo",instance="node1",job="node"}
+node_network_flags{device="lo",instance="node2",job="node"}
+
+
+results greater than 100
+node_network_flags > 100
+
+node_network_flags{device="enp0s3", instance="node1", job="node"} 5000
+
+node_network_receive_packets_total
+
+node_network_receive_packets_total >=220
+node_filesystem_avail_bytes
+
+node_filesystem_avail_bytes < bool 1000
+
+node_filesystem_avail_bytes
+
+AND Operator
+node_filesystem_avail_bytes > 1000 and node_filesystem_avail_bytes < 3000
+
+OR Operator
+node_filesystem_avail_bytes < 1000 or node_filesystem_avail_bytes > 3000
+
+Unless Operator
+node_filesystem_avail_bytes > 1000 unless node_filesystem_avail_bytes > 30000
+
+
+
+node_arp_entries+50
+node_filesystem_avail_bytes > 6000000  and node_filesystem_avail_bytes < 10000000
+node_filesystem_avail_bytes < 6000000  or node_filesystem_avail_bytes > 10000000
+
+
+
